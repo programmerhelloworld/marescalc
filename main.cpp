@@ -9,6 +9,8 @@ Francesco Maresca's Calculator (C++ version 1)
 #include <windows.h>
 #include <cstdio>
 #include <cstring>
+
+
 #define CALC_FIELD 1001																// Textbox
 #define ID_OK_BUTTON 1																// Id button "="
 #define ID_ONE_BUTTON 2																// Id button "1"
@@ -35,6 +37,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
     switch (Message) {
         case WM_COMMAND:
+        	
+        	// Button "1"
             if (LOWORD(wParam) == ID_ONE_BUTTON) {
                 if (isOperatorClicked) {
                     strcpy(currentInput, "1");
@@ -44,6 +48,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
                 }
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
             } 
+            // Button "2"
             else if (LOWORD(wParam) == ID_TWO_BUTTON) {
                 if (isOperatorClicked) {
                     strcpy(currentInput, "2");
@@ -53,6 +58,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
                 }
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
             } 
+            
+            // Button "3"
             else if (LOWORD(wParam) == ID_THREE_BUTTON) {
                 if (isOperatorClicked) {
                     strcpy(currentInput, "3");
@@ -62,6 +69,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
                 }
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
             }
+            
+            // Button "4"
             else if (LOWORD(wParam) == ID_FOUR_BUTTON) {
                 if (isOperatorClicked) {
                     strcpy(currentInput, "4");
@@ -71,6 +80,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
                 }
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
             }
+            
+            // Button "5"
             else if (LOWORD(wParam) == ID_FIVE_BUTTON) {
                 if (isOperatorClicked) {
                     strcpy(currentInput, "5");
@@ -80,6 +91,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
                 }
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
             }
+            
+            // Button "6"
             else if (LOWORD(wParam) == ID_SIX_BUTTON) {
                 if (isOperatorClicked) {
                     strcpy(currentInput, "6");
@@ -89,6 +102,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
                 }
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
             }
+            
+            // Button "7"
             else if (LOWORD(wParam) == ID_SEVEN_BUTTON) {
                 if (isOperatorClicked) {
                     strcpy(currentInput, "7");
@@ -189,6 +204,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
     return 0;
 }
 
+// WINDOW
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     WNDCLASSEX wc;
     HWND hwnd;
@@ -209,9 +225,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-    hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "WindowClass", "Francesco Maresca's Calculator", WS_VISIBLE | WS_OVERLAPPEDWINDOW,
+    hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "WindowClass", "Marescalc", WS_VISIBLE | WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU,
         CW_USEDEFAULT, CW_USEDEFAULT, 250, 470, NULL, NULL, hInstance, NULL);
-
+	
+	
+	
     if (hwnd == NULL) {
         MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         return 0;
@@ -247,5 +265,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     return msg.wParam;
 }
-
 
