@@ -200,7 +200,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
                             MessageBox(hwnd, "Cannot divide by zero", "Error", MB_ICONEXCLAMATION | MB_OK);
                         break;
                 }
-                sprintf(currentInput, "%f", result);
+                sprintf(currentInput, "%g", result);
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
                 n1 = result; // Store result for further operations
                 operatorClicked = '\0'; // Reset operator
