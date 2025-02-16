@@ -1,15 +1,23 @@
 /*
+
 ================================================================
+
 Copyright (c) 2025 Francesco Maresca @programmerhelloworld
 
-Francesco Maresca's Calculator (C++ version 1)
+Francesco Maresca's Calculator (C++ version 2)
 
+This version handles expressions
 ================================================================
+
 */
 #include <windows.h>
+#include <iostream>
 #include <cstdio>
 #include <cstring>
-
+#include <stack>
+#include <cctype>
+#include <cmath>
+#include <string>
 
 #define CALC_FIELD 1001 // Textbox
 #define ID_OK_BUTTON 1 // Id button "="
@@ -29,205 +37,149 @@ Francesco Maresca's Calculator (C++ version 1)
 #define ID_DIV_BUTTON 15 // Id button "/"
 #define ID_CANCEL_BUTTON 16 // Id button "CE"
 #define ID_POINT_BUTTON 17 // Id button "."
+#define ID_OPEN_PARENTHESIS_BUTTON 18
+#define ID_CLOSE_PARENTHESIS_BUTTON 19
+// Utility to check if the character is a digit
+bool isDigit(char c) {
+    return c >= '0' && c <= '9';
+}
 
+// Function to apply arithmetic operations
+double applyOperation(double a, double b, char op) {
+    switch (op) {
+        case '+': return a + b;
+        case '-': return a - b;
+        case '*': return a * b;
+        case '/': return a / b;
+        default: return 0;
+    }
+}
+
+// Function to handle precedence of operators
+int precedence(char op) {
+    if (op == '+' || op == '-') return 1;
+    if (op == '*' || op == '/') return 2;
+    return 0;
+}
+
+// Function to evaluate the expression
+double evaluateExpression(const std::string &expression) {
+    std::stack<double> values;  // Stack for numbers
+    std::stack<char> ops;       // Stack for operators
+
+    bool isNegative = false; // Flag to handle negative numbers
+
+    for (int i = 0; i < expression.length(); i++) {
+        char c = expression[i];
+
+        // Skip whitespace
+        if (isspace(c)) continue;
+
+        // Handle negative numbers
+        if (c == '-' && (i == 0 || expression[i - 1] == '(' || expression[i - 1] == '+' || expression[i - 1] == '-' || expression[i - 1] == '*' || expression[i - 1] == '/')) {
+            isNegative = true;
+            continue;
+        }
+
+        // If current character is a number
+        if (isDigit(c)) {
+            double value = 0;
+            while (i < expression.length() && isDigit(expression[i])) {
+                value = value * 10 + (expression[i] - '0');
+                i++;
+            }
+            i--; // Adjust for the extra increment after the loop
+            if (isNegative) {
+                value = -value;  // Apply negative sign
+                isNegative = false;  // Reset the flag
+            }
+            values.push(value);
+        }
+        // If current character is '('
+        else if (c == '(') {
+            ops.push(c);
+        }
+        // If current character is ')'
+        else if (c == ')') {
+            while (!ops.empty() && ops.top() != '(') {
+                double val2 = values.top(); values.pop();
+                double val1 = values.top(); values.pop();
+                char op = ops.top(); ops.pop();
+                values.push(applyOperation(val1, val2, op));
+            }
+            ops.pop(); // Pop '(' from stack
+        }
+        // If current character is an operator
+        else if (c == '+' || c == '-' || c == '*' || c == '/') {
+            while (!ops.empty() && precedence(ops.top()) >= precedence(c)) {
+                double val2 = values.top(); values.pop();
+                double val1 = values.top(); values.pop();
+                char op = ops.top(); ops.pop();
+                values.push(applyOperation(val1, val2, op));
+            }
+            ops.push(c);
+        }
+    }
+
+    // Apply remaining operators
+    while (!ops.empty()) {
+        double val2 = values.top(); values.pop();
+        double val1 = values.top(); values.pop();
+        char op = ops.top(); ops.pop();
+        values.push(applyOperation(val1, val2, op));
+    }
+
+    return values.top();
+}
+
+// Function to handle calculator input and perform calculations
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-    static double n1 = 0, n2 = 0, result = 0;
     static char currentInput[100] = "";
-    static bool isOperatorClicked = false;
-    static char operatorClicked = '\0';
 
     switch (Message) {
         case WM_COMMAND:
-       
-        // Button "1"
-            if (LOWORD(wParam) == ID_ONE_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "1");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "1");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-            // Button "2"
-            else if (LOWORD(wParam) == ID_TWO_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "2");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "2");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "3"
-            else if (LOWORD(wParam) == ID_THREE_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "3");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "3");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "4"
-            else if (LOWORD(wParam) == ID_FOUR_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "4");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "4");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "5"
-            else if (LOWORD(wParam) == ID_FIVE_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "5");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "5");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "6"
-            else if (LOWORD(wParam) == ID_SIX_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "6");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "6");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "7"
-            else if (LOWORD(wParam) == ID_SEVEN_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "7");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "7");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "8"
-            else if (LOWORD(wParam) == ID_EIGHT_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "8");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "8");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "9"
-            else if (LOWORD(wParam) == ID_NINE_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "9");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "9");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "0"
-            else if (LOWORD(wParam) == ID_ZERO_BUTTON) {
-                if (isOperatorClicked) {
-                    strcpy(currentInput, "0");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, "0");
-                }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-            }
-           
-            // Button "+"
-            else if (LOWORD(wParam) == ID_SUM_BUTTON) {
-                n1 = atof(currentInput);
-                operatorClicked = '+';
-                currentInput[0] = '\0';
-                isOperatorClicked = true;
-            }
-           
-            // Button "-"
-            else if (LOWORD(wParam) == ID_SUB_BUTTON) {
-                n1 = atof(currentInput);
-                operatorClicked = '-';
-                currentInput[0] = '\0';
-                isOperatorClicked = true;
-            }
-           
-            // Button "*"
-            else if (LOWORD(wParam) == ID_MULT_BUTTON) {
-                n1 = atof(currentInput);
-                operatorClicked = '*';
-                currentInput[0] = '\0';
-                isOperatorClicked = true;
-            }
-           
-            // Button "/"
-            else if (LOWORD(wParam) == ID_DIV_BUTTON) {
-                n1 = atof(currentInput);
-                operatorClicked = '/';
-                currentInput[0] = '\0';
-                isOperatorClicked = true;
-            }
-           
-            // Button "="
-            else if (LOWORD(wParam) == ID_OK_BUTTON) {
-                n2 = atof(currentInput);
-                switch (operatorClicked) {
-                    case '+':
-                        result = n1 + n2;
-                        break;
-                    case '-':
-                        result = n1 - n2;
-                        break;
-                    case '*':
-                        result = n1 * n2;
-                        break;
-                    case '/':
-                        if (n2 != 0)
-                            result = n1 / n2;
-                        else
-                            MessageBox(hwnd, "Cannot divide by zero", "Error", MB_ICONEXCLAMATION | MB_OK);
-                        break;
-                }
+            if (LOWORD(wParam) == ID_OK_BUTTON) {
+                // Evaluate the expression
+                double result = evaluateExpression(currentInput);
                 sprintf(currentInput, "%g", result);
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-                n1 = result; // Store result for further operations
-                operatorClicked = '\0'; // Reset operator
-            }
-           
-            // Button "CE"
-            else if (LOWORD(wParam) == ID_CANCEL_BUTTON) {
+            } else if (LOWORD(wParam) == ID_CANCEL_BUTTON) {
                 strcpy(currentInput, "");
                 SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-                n1 = n2 = result = 0; // Reset all values
-                operatorClicked = '\0';
-            }
-           
-            // Button "."
-else if (LOWORD(wParam) == ID_POINT_BUTTON){
-if (isOperatorClicked) {
-                    strcpy(currentInput, ".");
-                    isOperatorClicked = false;
-                } else {
-                    strcat(currentInput, ".");
+            } else {
+                // Button presses for numbers and operators
+                char buttonChar = '\0';
+                if (LOWORD(wParam) >= ID_ONE_BUTTON && LOWORD(wParam) <= ID_NINE_BUTTON) {
+                    buttonChar = '0' + (LOWORD(wParam) - ID_ONE_BUTTON + 1);
+                } else if (LOWORD(wParam) == ID_ZERO_BUTTON) {
+                    buttonChar = '0';
+                } else if (LOWORD(wParam) == ID_SUM_BUTTON) {
+                    buttonChar = '+';
+                } else if (LOWORD(wParam) == ID_SUB_BUTTON) {
+                    buttonChar = '-';
+                } else if (LOWORD(wParam) == ID_MULT_BUTTON) {
+                    buttonChar = '*';
+                } else if (LOWORD(wParam) == ID_DIV_BUTTON) {
+                    buttonChar = '/';
+                } else if (LOWORD(wParam) == ID_POINT_BUTTON) {
+                    buttonChar = '.';
+                } else if (LOWORD(wParam) == ID_OPEN_PARENTHESIS_BUTTON) {
+                    buttonChar = '(';
+                } else if (LOWORD(wParam) == ID_CLOSE_PARENTHESIS_BUTTON) {
+                    buttonChar = ')';
                 }
-                SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
-}
+
+                if (buttonChar != '\0') {
+                    strcat(currentInput, &buttonChar);
+                    SetWindowText(GetDlgItem(hwnd, CALC_FIELD), currentInput);
+                }
+            }
             break;
+
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
+
         default:
             return DefWindowProc(hwnd, Message, wParam, lParam);
     }
@@ -255,21 +207,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-// Window settings
+    // Window settings
     hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "WindowClass", "Marescalc", WS_VISIBLE | WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU,
-        CW_USEDEFAULT, CW_USEDEFAULT, 250, 470, NULL, NULL, hInstance, NULL);
-
-
+                          CW_USEDEFAULT, CW_USEDEFAULT, 250, 470, NULL, NULL, hInstance, NULL);
 
     if (hwnd == NULL) {
         MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
 
-// Creation of a text field
+    // Creation of a text field
     CreateWindowExW(WS_EX_PALETTEWINDOW, L"Edit", NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_LEFT | ES_AUTOVSCROLL, 20, 30, 115, 20, hwnd, (HMENU)CALC_FIELD, hInstance, NULL);
 
-// Creation of buttons , text ,                                                      , x , y , w, h
+
+	// Creation of buttons , text ,                                                      , x , y , w, h
     CreateWindowW(L"BUTTON", L"=", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 165, 5, 40, 40, hwnd, (HMENU)ID_OK_BUTTON, hInstance, NULL);
     CreateWindowW(L"BUTTON", L"CE", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 165, 50, 40, 40, hwnd, (HMENU)ID_CANCEL_BUTTON, hInstance, NULL);
 
@@ -284,11 +235,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     CreateWindowW(L"BUTTON", L"9", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 160, 240, 50, 50, hwnd, (HMENU)ID_NINE_BUTTON, hInstance, NULL);
     CreateWindowW(L"BUTTON", L"0", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 90, 310, 50, 50, hwnd, (HMENU)ID_ZERO_BUTTON, hInstance, NULL);
 
-    CreateWindowW(L"BUTTON", L"+", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 20, 370, 40, 40, hwnd, (HMENU)ID_SUM_BUTTON, hInstance, NULL);
-    CreateWindowW(L"BUTTON", L"-", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 70, 370, 40, 40, hwnd, (HMENU)ID_SUB_BUTTON, hInstance, NULL);
-    CreateWindowW(L"BUTTON", L"*", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 120, 370, 40, 40, hwnd, (HMENU)ID_MULT_BUTTON, hInstance, NULL);
-    CreateWindowW(L"BUTTON", L"/", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 170, 370, 40, 40, hwnd, (HMENU)ID_DIV_BUTTON, hInstance, NULL);
-CreateWindowW(L"BUTTON", L".", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 170, 320, 40, 40, hwnd, (HMENU)ID_POINT_BUTTON, hInstance, NULL);
+    CreateWindowW(L"BUTTON", L"+", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 20, 370, 35, 35, hwnd, (HMENU)ID_SUM_BUTTON, hInstance, NULL);
+    CreateWindowW(L"BUTTON", L"-", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 70, 370, 35, 35, hwnd, (HMENU)ID_SUB_BUTTON, hInstance, NULL);
+    CreateWindowW(L"BUTTON", L"*", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 120, 370, 35, 35, hwnd, (HMENU)ID_MULT_BUTTON, hInstance, NULL);
+    CreateWindowW(L"BUTTON", L"/", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 170, 370, 35, 35, hwnd, (HMENU)ID_DIV_BUTTON, hInstance, NULL);
+    CreateWindowW(L"BUTTON", L".", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 170, 320, 35, 35, hwnd, (HMENU)ID_POINT_BUTTON, hInstance, NULL);
+
+    // Create parentheses buttons
+    CreateWindowW(L"BUTTON", L"(", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 20, 310, 50, 50, hwnd, (HMENU)ID_OPEN_PARENTHESIS_BUTTON, hInstance, NULL);
+    CreateWindowW(L"BUTTON", L")", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 160, 310, 50, 50, hwnd, (HMENU)ID_CLOSE_PARENTHESIS_BUTTON, hInstance, NULL);
+
     while (GetMessage(&msg, NULL, 0, 0) > 0) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
