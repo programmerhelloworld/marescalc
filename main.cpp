@@ -62,12 +62,12 @@ int precedence(char op) {
     return 0;
 }
 
-// Function to evaluate the expression
 double evaluateExpression(const std::string &expression) {
     std::stack<double> values;  // Stack for numbers
     std::stack<char> ops;       // Stack for operators
 
-    bool isNegative = false; // Flag to handle negative numbers
+    bool isNegative = false;    // Flag to handle negative numbers
+    double decimalPlace = 0.1;  // Decimal place tracker for floating-point numbers
 
     for (int i = 0; i < expression.length(); i++) {
         char c = expression[i];
@@ -78,22 +78,41 @@ double evaluateExpression(const std::string &expression) {
         // Handle negative numbers
         if (c == '-' && (i == 0 || expression[i - 1] == '(' || expression[i - 1] == '+' || expression[i - 1] == '-' || expression[i - 1] == '*' || expression[i - 1] == '/')) {
             isNegative = true;
-            continue;
+            continue;  // Skip the current negative sign, it will be handled later
         }
 
-        // If current character is a number
-        if (isDigit(c)) {
-            double value = 0;
+        // If current character is a number or a decimal point
+        if (isDigit(c) || c == '.') {
+            double value = 0.0;
+
+            // If it's a digit, build the integer part
             while (i < expression.length() && isDigit(expression[i])) {
                 value = value * 10 + (expression[i] - '0');
                 i++;
             }
-            i--; // Adjust for the extra increment after the loop
-            if (isNegative) {
-                value = -value;  // Apply negative sign
-                isNegative = false;  // Reset the flag
+
+            // If a decimal point is found, handle fractional part
+            if (i < expression.length() && expression[i] == '.') {
+                i++;  // Skip the decimal point
+                double decimalFactor = 1;
+
+                while (i < expression.length() && isDigit(expression[i])) {
+                    decimalFactor *= 10;
+                    value += (expression[i] - '0') / decimalFactor;
+                    i++;
+                }
             }
+
+            // Adjust for negative numbers
+            if (isNegative) {
+                value = -value;
+                isNegative = false;
+            }
+
+            // Push the number onto the values stack
             values.push(value);
+
+            i--; // Adjust for the extra increment inside the loop
         }
         // If current character is '('
         else if (c == '(') {
