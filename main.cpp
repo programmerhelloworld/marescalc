@@ -4,7 +4,7 @@
 
 Copyright (c) 2025 Francesco Maresca @programmerhelloworld
 
-Francesco Maresca's Calculator (C++ version 3)
+Francesco Maresca's Calculator (C++ version 3.1)
 
 This version handles expressions
 ================================================================
